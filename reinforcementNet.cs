@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,11 +8,11 @@ using Random = UnityEngine.Random;
 
 public class reinforcementNet : MonoBehaviour
 {
-    public Matrix<float> inputLayer = Matrix<float>.Build.Dense(1, 3);
+    public Matrix<float> inputLayer = Matrix<float>.Build.Dense(1, 4);
 
     public List<Matrix<float>> hiddenLayers = new List<Matrix<float>>();
 
-    public Matrix<float> outputLayer = Matrix<float>.Build.Dense(1, 2);
+    public Matrix<float> outputLayer = Matrix<float>.Build.Dense(1, 3);
 
     public List<Matrix<float>> weights = new List<Matrix<float>>();
 
@@ -41,7 +41,7 @@ public class reinforcementNet : MonoBehaviour
             //WEIGHTS
             if (i == 0)
             {
-                Matrix<float> inputToH1 = Matrix<float>.Build.Dense(3, hiddenNeuronCount);
+                Matrix<float> inputToH1 = Matrix<float>.Build.Dense(4, hiddenNeuronCount);
                 weights.Add(inputToH1);
             }
 
@@ -50,7 +50,7 @@ public class reinforcementNet : MonoBehaviour
 
         }
 
-        Matrix<float> OutputWeight = Matrix<float>.Build.Dense(hiddenNeuronCount, 2);
+        Matrix<float> OutputWeight = Matrix<float>.Build.Dense(hiddenNeuronCount, 3);
         weights.Add(OutputWeight);
         biases.Add(Random.Range(-1f, 1f));
 
@@ -127,11 +127,13 @@ public class reinforcementNet : MonoBehaviour
 
     }
 
-    public (float, float) RunNetwork(float a, float b, float c)
+    public (float, float, float) RunNetwork(float a, float b, float c, float d)
     {
         inputLayer[0, 0] = a;
         inputLayer[0, 1] = b;
         inputLayer[0, 2] = c;
+        //eating layer
+        inputLayer[0, 3] = d;
 
         inputLayer = inputLayer.PointwiseTanh();
 
@@ -145,7 +147,7 @@ public class reinforcementNet : MonoBehaviour
         outputLayer = ((hiddenLayers[hiddenLayers.Count - 1] * weights[weights.Count - 1]) + biases[biases.Count - 1]).PointwiseTanh();
 
         //First output is acceleration and second output is steering
-        return (Sigmoid(outputLayer[0, 0]), (float)Math.Tanh(outputLayer[0, 1]));
+        return (Sigmoid(outputLayer[0, 0]), (float)Math.Tanh(outputLayer[0, 1]), (float)Math.Tanh(outputLayer[0, 2]));
     }
 
     private float Sigmoid(float s)
